@@ -10,21 +10,19 @@ source:
   sha256: fcca23911c9a9da71cebeffeba708c59d1d6401eec6eb2dd73cae35b8ea3c613
 
 build:
-  number: 0
+  number: 1
 
 requirements:
   build:
     - {{ compiler('c') }}
+    - {{ stdlib('c') }}
     - {{ compiler('cxx') }}
     - cmake
-    # libudev is on its own in CentOS 6, packaged with systemd in CentOS 7
-    - {{ cdt('libudev-devel') }}  # [linux and cdt_name=='cos6']
-    - {{ cdt('systemd-devel') }}  # [linux and cdt_name=='cos7']
     - ninja
     - pkg-config
   host:
     - libusb
-    - pthreads-win32  # [win]
+    - winpthreads-devel  # [win]
 
 outputs:
   - name: libairspy
@@ -36,13 +34,12 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib('c') }}
         - cmake
         - ninja
       host:
         - libusb
-        - pthreads-win32  # [win]
-      run:
-        - pthreads-win32  # [win]
+        - winpthreads-devel  # [win]
     test:
       commands:
         # verify that headers get installed
@@ -67,6 +64,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib('c') }}
         - cmake
         - ninja
       host:
@@ -79,13 +77,21 @@ outputs:
         - airspy_lib_version
 
         # verify that the remaining executables can be run
-        {% set cmds = ["airspy_gpio", "airspy_gpiodir", "airspy_info"] %}
-        {% set cmds = cmds + ["airspy_r820t", "airspy_rx", "airspy_si5351c"] %}
-        {% set cmds = cmds + ["airspy_spiflash"] %}
-        {% for cmd in cmds %}
-        - {{ cmd }} || ec=$?; if [ $ec -gt 1 ]; then exit $ec; fi  # [not win]
-        - {{ cmd }} || if !ERRORLEVEL! LEQ 1 cmd /c "exit /b 0"  # [win]
-        {% endfor %}
+        - airspy_gpio || ec=$?; if [ $ec -gt 1 ]; then exit $ec; fi  # [not win]
+        - airspy_gpiodir || ec=$?; if [ $ec -gt 1 ]; then exit $ec; fi  # [not win]
+        - airspy_info || ec=$?; if [ $ec -gt 1 ]; then exit $ec; fi  # [not win]
+        - airspy_r820t || ec=$?; if [ $ec -gt 1 ]; then exit $ec; fi  # [not win]
+        - airspy_rx || ec=$?; if [ $ec -gt 1 ]; then exit $ec; fi  # [not win]
+        - airspy_si5351c || ec=$?; if [ $ec -gt 1 ]; then exit $ec; fi  # [not win]
+        - airspy_spiflash || ec=$?; if [ $ec -gt 1 ]; then exit $ec; fi  # [not win]
+
+        - airspy_gpio || if !ERRORLEVEL! LEQ 1 cmd /c "exit /b 0"  # [win]
+        - airspy_gpiodir || if !ERRORLEVEL! LEQ 1 cmd /c "exit /b 0"  # [win]
+        - airspy_info || if !ERRORLEVEL! LEQ 1 cmd /c "exit /b 0"  # [win]
+        - airspy_r820t || if !ERRORLEVEL! LEQ 1 cmd /c "exit /b 0"  # [win]
+        - airspy_rx || if !ERRORLEVEL! LEQ 1 cmd /c "exit /b 0"  # [win]
+        - airspy_si5351c || if !ERRORLEVEL! LEQ 1 cmd /c "exit /b 0"  # [win]
+        - airspy_spiflash || if !ERRORLEVEL! LEQ 1 cmd /c "exit /b 0"  # [win]
 
         # verify that udev rule gets installed
         - test -f $PREFIX/lib/udev/rules.d/52-airspy.rules  # [linux]
