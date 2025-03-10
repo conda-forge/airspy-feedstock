@@ -18,9 +18,6 @@ requirements:
     - {{ stdlib('c') }}
     - {{ compiler('cxx') }}
     - cmake
-    # libudev is on its own in CentOS 6, packaged with systemd in CentOS 7
-    - {{ cdt('libudev-devel') }}  # [linux and cdt_name=='cos6']
-    - {{ cdt('systemd-devel') }}  # [linux and cdt_name=='cos7']
     - ninja
     - pkg-config
   host:
